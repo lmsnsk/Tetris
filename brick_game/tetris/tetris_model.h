@@ -45,7 +45,7 @@ typedef struct {
 
 typedef enum { O, L, J, S, Z, T, I } Figure_t;
 
-State_t *initState();
+State_t *init_state();
 void one_step(State_t *state, State_temp_t *temp_state, UserAction_t action);
 int generate_random_fig();
 void update_figure(int random_fig);

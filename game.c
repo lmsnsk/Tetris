@@ -2,24 +2,24 @@
 #include "fms/fms.h"
 
 void setup();
-int initInfoField(GameInfo_t *info);
-void clearInfo(GameInfo_t *info);
+int init_info_field(GameInfo_t *info);
+void clear_info(GameInfo_t *info);
 
 int main(void) {
   int error = 0;
   GameInfo_t *info = getInfo();
 
   setup();
-  error = initInfoField(info);
+  error = init_info_field(info);
   if (!error) {
     updateCurrentState();
 
     while (info->level != -1) {
-      gameLoop();
+      game_loop();
       timeout(info->speed);
     }
   }
-  clearInfo(info);
+  clear_info(info);
   endwin();
   return 0;
 }
@@ -33,7 +33,7 @@ void setup() {
   curs_set(false);
 }
 
-int initInfoField(GameInfo_t *info) {
+int init_info_field(GameInfo_t *info) {
   int error = 0;
   info->field = (int **)calloc(ROWS, sizeof(int *));
   info->next = (int **)calloc(FIG_SIZE, sizeof(int *));
@@ -53,7 +53,7 @@ int initInfoField(GameInfo_t *info) {
   return error;
 }
 
-void clearInfo(GameInfo_t *info) {
+void clear_info(GameInfo_t *info) {
   for (int i = 0; i < ROWS; i++) free(info->field[i]);
   for (int i = 0; i < FIG_SIZE; i++) free(info->next[i]);
   free(info->field);

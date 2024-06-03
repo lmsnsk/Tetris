@@ -1,6 +1,6 @@
 #include "fms.h"
 
-void gameLoop() {
+void game_loop() {
   UserAction_t status = Down;
   GameInfo_t *info = getInfo();
   StateStatus stateStatus = getState()->stateStatus;
@@ -11,16 +11,17 @@ void gameLoop() {
   }
 
   if (stateStatus == START) {
-    startGame(status, stateStatus);
+    start_game(status, stateStatus);
   }
 
   if (stateStatus == SPAWN) {
-    // race->spawnEnemy();
     stateStatus = SHIFT;
   }
 
   if (stateStatus == SHIFT) {
-    shiftCar(status, stateStatus);
+  }
+
+  if (stateStatus == ATTACH) {
   }
 
   if (stateStatus == PAUSE) {
@@ -44,7 +45,7 @@ void gameLoop() {
   }
 };
 
-void startGame(UserAction_t *status, StateStatus *stateStatus) {
+void start_game(UserAction_t *status, StateStatus *stateStatus) {
   GameInfo_t *info = getInfo();
   draw(*info);
   status = getPressedKey();
@@ -79,7 +80,13 @@ void startGame(UserAction_t *status, StateStatus *stateStatus) {
 GameInfo_t updateCurrentState() {
   GameInfo_t *info = getInfo();
   State_t *state = getState();
-  copyField(state->field, info->field);
+  static int check_init_state = 0;
+
+  if (!check_init_state) {
+    init_state();
+    check_init_state = 1;
+  }
+  copy_field_to_info(info, state);
   info->high_score = state->high_score;
   info->pause = state->pause;
   info->score = state->score;

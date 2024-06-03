@@ -119,7 +119,7 @@ State_temp_t *get_temp_state() {
   return &state;
 }
 
-State_t *initState() {
+State_t *init_state() {
   State_t *state = getState();
   State_temp_t *temp_state = get_temp_state();
   state->pos.x = (COLUMNS / 2 - 1);
@@ -440,24 +440,6 @@ void userInput(UserAction_t action, int hold) {
   } else if (!state->pause && state->start && action != Up) {
     moveFigure(state, temp_state, action);
   }
-}
-
-GameInfo_t updateCurrentState() {
-  GameInfo_t *info = getInfo();
-  State_t *state = getState();
-  static int check_init_state = 0;
-
-  if (!check_init_state) {
-    initState();
-    check_init_state = 1;
-  }
-  copy_field_to_info(info, state);
-  info->high_score = state->high_score;
-  info->pause = state->pause;
-  info->score = state->score;
-  info->speed = state->speed;
-  info->level = state->level;
-  return *info;
 }
 
 void copy_field_to_info(GameInfo_t *info, State_t *state) {
