@@ -1,12 +1,11 @@
-CC=g++
-FLAGS=-Wall -Werror -Wextra -std=c++17
+CC=gcc
+FLAGS=-Wall -Wextra -std=c11
+# FLAGS=-Wall -Werror -Wextra -std=c11
 FLAGCUR=-lncurses
 ASAN=-g -fsanitize=address
-SNAKE_LIB=snake.a
 TETRIS_LIB=tetris.a
-SNAKE_FILES=controller/controller.cpp $(SNAKE_LIB) gui/cli/cli.c
-TETRIS_FILES=controller/controller.cpp $(TETRIS_LIB) gui/cli/cli.c
-FILETEST=tests/*.cpp controller/controller.cpp brick_game/snake/*.cpp
+TETRIS_FILES=gui/cli/cli.c game.c tetris.a
+FILETEST=tests/*.c  brick_game/tetris/*.c fms/tetris/*.c game.c
 FILEREPORT=s21_test_report
 FILETESTO=s21_test
 DIRREPORT=report
@@ -15,53 +14,31 @@ COVFLAG=-fprofile-arcs -ftest-coverage
 OS = $(shell uname)
 
 ifeq ($(OS), Darwin)
-	TESTFLAGS=-pthread -lcheck -lgtest -lstdc++
+	TESTFLAGS=-pthread -lcheck 
 	OPEN_CMD=open
 else
-	TESTFLAGS=-pthread -lcheck_pic -lrt -lsubunit -lgtest -lstdc++
+	TESTFLAGS=-pthread -lcheck_pic -lrt -lsubunit 
 	OPEN_CMD=xdg-open
 endif
 
-all: install
-	./app/Snake.app
-
-snake: install
-	./app/Snake.app
+all: tetris_cli
 
 tetris: install_tetris
 	./app/Tetris.app
 
-$(SNAKE_LIB):
-	$(CC) $(FLAGS) -DSNAKE -c brick_game/snake/*.cpp
-	ar rcs $(SNAKE_LIB) *.o
-	ranlib $(SNAKE_LIB)
+tetris.a:
+	$(CC) $(FLAGS) -c brick_game/tetris/*.c fms/tetris/*.c
+	ar rcs tetris.a *.o
+	ranlib tetris.a
 
-$(TETRIS_LIB):
-	$(CC) $(FLAGS) -DTETRIS -c brick_game/tetris/*.c
-	ar rcs $(TETRIS_LIB) *.o
-	ranlib $(TETRIS_LIB)
-
-snake_cli: $(SNAKE_LIB)
-	$(CC) $(FLAGS) -DSNAKE $(SNAKE_FILES) $(FLAGCUR)
+tetris_cli: tetris.a
+	$(CC) $(FLAGS) $(TETRIS_FILES) $(FLAGCUR)
 	./a.out
-
-tetris_cli: $(TETRIS_LIB)
-	$(CC) $(FLAGS) -DTETRIS $(TETRIS_FILES) $(FLAGCUR)
-	./a.out
-
-asan_s: $(SNAKE_LIB)
-	$(CC) $(FLAGS) -DSNAKE $(ASAN) $(SNAKE_FILES) $(FLAGCUR)
 
 asan_t: $(TETRIS_LIB)
-	$(CC) $(FLAGS) -DTETRIS $(ASAN) $(TETRIS_FILES) $(FLAGCUR)
+	$(CC) $(FLAGS) $(ASAN) $(TETRIS_FILES) $(FLAGCUR)
 
 install:
-	mkdir ./build
-	mkdir ./app
-	cp gui/desktop/helper/desktop_snake.pro gui/desktop/desktop.pro
-	cd ./build && qmake ../gui/desktop/ && make && cp desktop ../app/Snake.app
-
-install_tetris:
 	mkdir ./build
 	mkdir ./app
 	cp gui/desktop/helper/desktop_tetris.pro gui/desktop/desktop.pro
@@ -81,17 +58,17 @@ dvi:
 	$(OPEN_CMD) Snake.html
 
 test: $(SNAKE_LIB)
-	$(CC) $(FLAGS) $(FILETEST) $(SNAKE_LIB) -DSNAKE -o $(FILETESTO) $(TESTFLAGS)
+	$(CC) $(FLAGS) $(FILETEST) $(TETRIS_LIB) -o $(FILETESTO) $(TESTFLAGS)
 	rm -rf *.o *.a
 	./$(FILETESTO)
 
 test_val: $(SNAKE_LIB)
-	$(CC) $(FLAGS) $(FILETEST) $(SNAKE_LIB) -DSNAKE -o $(FILETESTO) $(TESTFLAGS)
+	$(CC) $(FLAGS) $(FILETEST) $(TETRIS_LIB) -o $(FILETESTO) $(TESTFLAGS)
 	valgrind --tool=memcheck --leak-check=yes \
 	--track-origins=yes -s ./$(FILETESTO)
 
 gcov_report:
-	$(CC) $(FLAGS) $(COVFLAG) $(FILETEST) -DSNAKE -o $(FILEREPORT) $(TESTFLAGS)
+	$(CC) $(FLAGS) $(COVFLAG) $(FILETEST) -o $(FILEREPORT) $(TESTFLAGS)
 	./$(FILEREPORT)
 	lcov -t "snake" -o test.info -c -d .  
 	genhtml -o $(DIRREPORT) test.info
@@ -107,4 +84,4 @@ clean:
 #style
 cpp:
 	cppcheck --enable=all --suppress=missingIncludeSystem brick_game/tetris/*.c \
-	brick_game/snake/*.cpp controller/*.cpp gui/cli/*.c gui/desktop/*.cpp tests/*.cpp
+	gui/cli/*.c tests/*.c fms/tetris/*.c game.c

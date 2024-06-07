@@ -3,38 +3,50 @@
 void game_loop() {
   UserAction_t status = Down;
   GameInfo_t *info = getInfo();
-  StateStatus stateStatus = getState()->stateStatus;
+  State_t *state = getState();
+  StateStatus stateStatus = state->stateStatus;
 
-  updateField();
-  if (getState()->game_over) {
+  if (state->game_over) {
     stateStatus = GAME_OVER;
   }
 
   if (stateStatus == START) {
-    start_game(status, stateStatus);
+    start_game(&status, &stateStatus);
   }
 
   if (stateStatus == SPAWN) {
+    init_first_figure(status);
     stateStatus = SHIFT;
   }
 
   if (stateStatus == SHIFT) {
+    status = getPressedKey();
+    if (status == Pause) {
+      stateStatus = PAUSE;
+      getState()->pause = 1;
+    } else {
+      shift(status);
+      stateStatus = ATTACH;
+    }
   }
 
   if (stateStatus == ATTACH) {
+    stateStatus = STEP;
   }
 
   if (stateStatus == PAUSE) {
     status = getPressedKey();
+    userInput(status, 0);
     if (status == Terminate) getState()->level = -1;
     if (status == Pause) getState()->pause = 0;
     stateStatus = SHIFT;
   }
 
   if (stateStatus == STEP) {
-    step();
+    step_down(status);
     updateCurrentState();
     draw(*info);
+    getState()->stateStatus = SHIFT;
   }
 
   if (stateStatus == GAME_OVER) {
@@ -47,45 +59,25 @@ void game_loop() {
 
 void start_game(UserAction_t *status, StateStatus *stateStatus) {
   GameInfo_t *info = getInfo();
+  init_state(getState());
   draw(*info);
-  status = getPressedKey();
-  if (status == Start) stateStatus = SPAWN;
-  if (status == Terminate) {
+  *status = getPressedKey();
+  if (*status == Start) *stateStatus = SPAWN;
+  if (*status == Terminate) {
     getState()->level = -1;
     updateCurrentState();
   }
 }
 
-// void shiftCar(UserAction_t &status, StateStatus &stateStatus) {
-//   Race *race = getRace();
-//   GameInfo_t *info = getInfo();
-//   RaceState_t *state = race->getState();
-//   int &pause = state->pause;
-//   status = state->first_step ? getPressedKey() : Down;
-//   userInput(status, 0);
-//   state->stateStatus = pause ? PAUSE : STEP;
-//   if (!state->pause && (status == Right || status == Left)) {
-//     race->shift(status);
-//     updateCurrentState();
-//     draw(*info);
-//   }
-//   if (status == Terminate) state->level = -1;
-//   if (status == Pause) {
-//     pause = !pause;
-//     stateStatus = PAUSE;
-//   }
-//   status = Down;
-// }
-
 GameInfo_t updateCurrentState() {
   GameInfo_t *info = getInfo();
   State_t *state = getState();
-  static int check_init_state = 0;
+  // static int check_init_state = 0;
 
-  if (!check_init_state) {
-    init_state();
-    check_init_state = 1;
-  }
+  // if (!check_init_state) {
+  //   init_state();
+  //   check_init_state = 1;
+  // }
   copy_field_to_info(info, state);
   info->high_score = state->high_score;
   info->pause = state->pause;
@@ -97,20 +89,40 @@ GameInfo_t updateCurrentState() {
 
 void userInput(UserAction_t action, int hold) {
   (void)hold;
-  if (action == Pause)
+  if (action == Pause) {
     getState()->action = Pause;
-  else if (action == Start)
+    getState()->stateStatus = PAUSE;
+  } else if (action == Start) {
     getState()->action = Start;
-  else if (action == Up)
+    getState()->stateStatus = START;
+  } else if (action == Up) {
     getState()->action = Up;
-  else if (action == Down)
+  } else if (action == Down) {
     getState()->action = Down;
-  else if (action == Left)
+  } else if (action == Left) {
     getState()->action = Left;
-  else if (action == Right)
+  } else if (action == Right) {
     getState()->action = Right;
-  else if (action == Terminate)
+  } else if (action == Terminate) {
     getState()->action = Terminate;
-  else if (action == Action)
+  } else if (action == Action) {
     getState()->action = Action;
+  }
 };
+
+State_t *getState() {
+  static State_t state;
+  return &state;
+}
+
+void copy_field_to_info(GameInfo_t *info, State_t *state) {
+  for (int i = 0; i < ROWS; i++) {
+    for (int j = 0; j < COLUMNS; j++) {
+      info->field[i][j] = state->field[i][j];
+
+      if (i < FIG_SIZE && j < FIG_SIZE) {
+        info->next[i][j] = state->next[i][j];
+      }
+    }
+  }
+}

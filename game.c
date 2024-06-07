@@ -1,5 +1,5 @@
 #include "common.h"
-#include "fms/fms.h"
+#include "fms/tetris/fms.h"
 
 void setup();
 int init_info_field(GameInfo_t *info);
