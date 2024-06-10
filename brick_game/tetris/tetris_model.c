@@ -127,7 +127,6 @@ State_t *init_state(State_t *state) {
   state->pause = 0;
   state->speed = START_SPEED;
   state->crash = 0;
-  state->dir = Right;
   state->stateStatus = START;
   state->action = Down;
   for (int i = 0; i < ROWS; i++) {
@@ -401,7 +400,7 @@ void readHighScore(State_t *state) {
   }
 };
 
-void step_down(UserAction_t action) {
+void attachFigure() {
   State_t *state = getState();
   State_temp_t *temp_state = get_temp_state();
   if (state->crash) {
@@ -414,12 +413,32 @@ void step_down(UserAction_t action) {
     state->pos.x = (COLUMNS / 2 - 1);
     state->pos.y = -1;
     state->crash = 0;
-    state->dir = Right;
     update_info(state);
     check_game_over(state);
   } else {
     copy_field_from_temp(state, temp_state);
   }
+  state->stateStatus = SHIFT;
+}
+
+void step_down(UserAction_t action) {
+  State_t *state = getState();
+  State_temp_t *temp_state = get_temp_state();
+  // if (state->crash) {
+  //   copy_field_to_temp(state, temp_state);
+  //   check_full_line(state, temp_state);
+  //   state->fig = state->next_fig;
+  //   state->wide = state->next_wide;
+  //   copy_figure(state, temp_state);
+  //   update_figure(generate_random_fig());
+  //   state->pos.x = (COLUMNS / 2 - 1);
+  //   state->pos.y = -1;
+  //   state->crash = 0;
+  //   update_info(state);
+  //   check_game_over(state);
+  // } else {
+  //   copy_field_from_temp(state, temp_state);
+  // }
   state->pos.y += 1;
   draw_figure_in_field(state, temp_state);
 }

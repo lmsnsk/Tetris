@@ -75,5 +75,6 @@ void check_game_over(State_t *state);
 void update_info(State_t *state);
 void saveHighScore(State_t *state);
 void readHighScore(State_t *state);
+void attachFigure();
 
 #endif  // S21_BRICKGAME_TETRIS_MODEL_H

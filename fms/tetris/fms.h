@@ -7,6 +7,6 @@
 void game_loop();
 void start_game();
 void copy_field_to_info(GameInfo_t *info, State_t *state);
-UserAction_t getPressedKey();
+void getPressedKey();
 
 #endif  // S21_FMS_TETRIS_H

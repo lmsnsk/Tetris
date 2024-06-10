@@ -13,6 +13,7 @@ int main(void) {
   error = init_info_field(info);
   if (!error) {
     updateCurrentState();
+    info->speed = START_SPEED;
 
     while (info->level != -1) {
       game_loop();

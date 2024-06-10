@@ -24,23 +24,19 @@ void game_loop() {
   }
 
   if (state->stateStatus == SHIFT) {
-    state->action = getPressedKey();
+    getPressedKey();
     if (state->action == Pause) {
       state->stateStatus = PAUSE;
       getState()->pause = 1;
       state->action = Down;
     } else {
       shift(state->action);
-      state->stateStatus = ATTACH;
+      state->stateStatus = STEP;
     }
   }
 
-  if (state->stateStatus == ATTACH) {
-    state->stateStatus = STEP;
-  }
-
   if (state->stateStatus == PAUSE) {
-    state->action = getPressedKey();
+    getPressedKey();
     if (state->action == Pause) {
       getState()->pause = 0;
       state->action = Down;
@@ -54,7 +50,11 @@ void game_loop() {
     step_down(state->action);
     updateCurrentState();
     draw(*info);
-    getState()->stateStatus = SHIFT;
+    getState()->stateStatus = ATTACH;
+  }
+
+  if (state->stateStatus == ATTACH) {
+    attachFigure();
   }
 
   if (state->stateStatus == GAME_OVER) {
@@ -63,15 +63,16 @@ void game_loop() {
     // updateCurrentState();
   }
 
-  draw(*info);
+  // draw(*info);
 };
 
 void start_game() {
   GameInfo_t *info = getInfo();
   State_t *state = getState();
-  init_state(getState());
+  init_state(state);
+  updateCurrentState();
   draw(*info);
-  state->action = getPressedKey();
+  getPressedKey();
   if (state->action == Start) state->stateStatus = SPAWN;
 }
 
@@ -93,32 +94,28 @@ GameInfo_t updateCurrentState() {
   return *info;
 };
 
-UserAction_t getPressedKey() {
-  UserAction_t status = Action;
-  // #ifdef TETRIS
-  status = Down;
-  // #endif
+void getPressedKey() {
+  State_t *state = getState();
   int ch = getch();
   if (ch != ERR) {
     if (ch == 'q' || ch == 'Q') {
-      status = Terminate;
+      state->action = Terminate;
     } else if (ch == 'p' || ch == 'P') {
-      status = Pause;
+      state->action = Pause;
     } else if (ch == 'e' || ch == 'E') {
-      status = Start;
+      state->action = Start;
     } else if (ch == KEY_DOWN) {
-      status = Down;
+      state->action = Down;
     } else if (ch == KEY_UP) {
-      status = Up;
+      state->action = Up;
     } else if (ch == KEY_LEFT) {
-      status = Left;
+      state->action = Left;
     } else if (ch == KEY_RIGHT) {
-      status = Right;
+      state->action = Right;
     } else if (ch == ' ') {
-      status = Action;
+      state->action = Action;
     }
   }
-  return status;
 };
 
 void userInput(UserAction_t action, int hold) {
