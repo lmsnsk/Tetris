@@ -128,6 +128,8 @@ State_t *init_state(State_t *state) {
   state->speed = START_SPEED;
   state->crash = 0;
   state->dir = Right;
+  state->stateStatus = START;
+  state->action = Down;
   for (int i = 0; i < ROWS; i++) {
     for (int j = 0; j < COLUMNS; j++) {
       state->field[i][j] = 0;
@@ -324,12 +326,12 @@ void shift(UserAction_t action) {
     }
     check_shift++;
   }
-  if (check_shift > 3) {
-    state->pos.y += 1;
-    if (check_collision(state, temp_state)) state->crash = 1;
-    check_shift = 0;
-  }
-  if (state->crash) state->pos.y -= 1;
+  // if (check_shift > 3) {
+  //   state->pos.y += 1;
+  //   if (check_collision(state, temp_state)) state->crash = 1;
+  //   check_shift = 0;
+  // }
+  // if (state->crash) state->pos.y -= 1;
 }
 
 void check_full_line(State_t *state, State_temp_t *temp_state) {
@@ -413,7 +415,6 @@ void step_down(UserAction_t action) {
     state->pos.y = -1;
     state->crash = 0;
     state->dir = Right;
-    // state->action = SPAWN;
     update_info(state);
     check_game_over(state);
   } else {

@@ -19,7 +19,8 @@ typedef enum {
   SHIFT,
   STEP,
   ATTACH,
-  GAME_OVER
+  GAME_OVER,
+  WAITING
 } StateStatus;
 
 typedef struct {

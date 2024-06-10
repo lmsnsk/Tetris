@@ -5,7 +5,8 @@
 #include "../../gui/cli/cli.h"
 
 void game_loop();
-void start_game(UserAction_t *status, StateStatus *stateStatus);
+void start_game();
 void copy_field_to_info(GameInfo_t *info, State_t *state);
+UserAction_t getPressedKey();
 
 #endif  // S21_FMS_TETRIS_H

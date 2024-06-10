@@ -1,72 +1,78 @@
 #include "fms.h"
 
 void game_loop() {
-  UserAction_t status = Down;
   GameInfo_t *info = getInfo();
   State_t *state = getState();
-  StateStatus stateStatus = state->stateStatus;
+
+  if (state->action == Terminate) {
+    getState()->level = -1;
+    updateCurrentState();
+    return;
+  }
 
   if (state->game_over) {
-    stateStatus = GAME_OVER;
+    state->stateStatus = GAME_OVER;
   }
 
-  if (stateStatus == START) {
-    start_game(&status, &stateStatus);
+  if (state->stateStatus == START) {
+    start_game();
   }
 
-  if (stateStatus == SPAWN) {
-    init_first_figure(status);
-    stateStatus = SHIFT;
+  if (state->stateStatus == SPAWN) {
+    init_first_figure(state->action);
+    state->stateStatus = SHIFT;
   }
 
-  if (stateStatus == SHIFT) {
-    status = getPressedKey();
-    if (status == Pause) {
-      stateStatus = PAUSE;
+  if (state->stateStatus == SHIFT) {
+    state->action = getPressedKey();
+    if (state->action == Pause) {
+      state->stateStatus = PAUSE;
       getState()->pause = 1;
+      state->action = Down;
     } else {
-      shift(status);
-      stateStatus = ATTACH;
+      shift(state->action);
+      state->stateStatus = ATTACH;
     }
   }
 
-  if (stateStatus == ATTACH) {
-    stateStatus = STEP;
+  if (state->stateStatus == ATTACH) {
+    state->stateStatus = STEP;
   }
 
-  if (stateStatus == PAUSE) {
-    status = getPressedKey();
-    userInput(status, 0);
-    if (status == Terminate) getState()->level = -1;
-    if (status == Pause) getState()->pause = 0;
-    stateStatus = SHIFT;
+  if (state->stateStatus == PAUSE) {
+    state->action = getPressedKey();
+    if (state->action == Pause) {
+      getState()->pause = 0;
+      state->action = Down;
+      state->stateStatus = SHIFT;
+      updateCurrentState();
+      draw(*info);
+    }
   }
 
-  if (stateStatus == STEP) {
-    step_down(status);
+  if (state->stateStatus == STEP) {
+    step_down(state->action);
     updateCurrentState();
     draw(*info);
     getState()->stateStatus = SHIFT;
   }
 
-  if (stateStatus == GAME_OVER) {
-    status = getPressedKey();
-    if (status == Terminate) getState()->level = -1;
-    if (!getState()->game_over) draw(*info);
-    updateCurrentState();
+  if (state->stateStatus == GAME_OVER) {
+    // state->action = getPressedKey();
+    // if (!getState()->game_over) draw(*info);
+    // updateCurrentState();
   }
+
+  draw(*info);
 };
 
-void start_game(UserAction_t *status, StateStatus *stateStatus) {
+void start_game() {
   GameInfo_t *info = getInfo();
+  State_t *state = getState();
   init_state(getState());
   draw(*info);
-  *status = getPressedKey();
-  if (*status == Start) *stateStatus = SPAWN;
-  if (*status == Terminate) {
-    getState()->level = -1;
-    updateCurrentState();
-  }
+  state->action = getPressedKey();
+  if (state->action == Start) state->stateStatus = SPAWN;
 }
 
 GameInfo_t updateCurrentState() {
@@ -85,6 +91,34 @@ GameInfo_t updateCurrentState() {
   info->speed = state->speed;
   info->level = state->level;
   return *info;
+};
+
+UserAction_t getPressedKey() {
+  UserAction_t status = Action;
+  // #ifdef TETRIS
+  status = Down;
+  // #endif
+  int ch = getch();
+  if (ch != ERR) {
+    if (ch == 'q' || ch == 'Q') {
+      status = Terminate;
+    } else if (ch == 'p' || ch == 'P') {
+      status = Pause;
+    } else if (ch == 'e' || ch == 'E') {
+      status = Start;
+    } else if (ch == KEY_DOWN) {
+      status = Down;
+    } else if (ch == KEY_UP) {
+      status = Up;
+    } else if (ch == KEY_LEFT) {
+      status = Left;
+    } else if (ch == KEY_RIGHT) {
+      status = Right;
+    } else if (ch == ' ') {
+      status = Action;
+    }
+  }
+  return status;
 };
 
 void userInput(UserAction_t action, int hold) {

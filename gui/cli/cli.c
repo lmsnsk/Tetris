@@ -66,30 +66,30 @@ void printGameOver() {
   refresh();
 }
 
-UserAction_t getPressedKey() {
-  UserAction_t status = Action;
-  // #ifdef TETRIS
-  status = Down;
-  // #endif
-  int ch = getch();
-  if (ch != ERR) {
-    if (ch == 'q' || ch == 'Q') {
-      status = Terminate;
-    } else if (ch == 'p' || ch == 'P') {
-      status = Pause;
-    } else if (ch == 'e' || ch == 'E') {
-      status = Start;
-    } else if (ch == KEY_DOWN) {
-      status = Down;
-    } else if (ch == KEY_UP) {
-      status = Up;
-    } else if (ch == KEY_LEFT) {
-      status = Left;
-    } else if (ch == KEY_RIGHT) {
-      status = Right;
-    } else if (ch == ' ') {
-      status = Action;
-    }
-  }
-  return status;
-};
+// UserAction_t getPressedKey() {
+//   UserAction_t status = Action;
+//   // #ifdef TETRIS
+//   status = Down;
+//   // #endif
+//   int ch = getch();
+//   if (ch != ERR) {
+//     if (ch == 'q' || ch == 'Q') {
+//       status = Terminate;
+//     } else if (ch == 'p' || ch == 'P') {
+//       status = Pause;
+//     } else if (ch == 'e' || ch == 'E') {
+//       status = Start;
+//     } else if (ch == KEY_DOWN) {
+//       status = Down;
+//     } else if (ch == KEY_UP) {
+//       status = Up;
+//     } else if (ch == KEY_LEFT) {
+//       status = Left;
+//     } else if (ch == KEY_RIGHT) {
+//       status = Right;
+//     } else if (ch == ' ') {
+//       status = Action;
+//     }
+//   }
+//   return status;
+// };

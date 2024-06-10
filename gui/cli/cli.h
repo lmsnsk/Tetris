@@ -8,7 +8,7 @@
 
 void draw(GameInfo_t info);
 void printGameOver();
-UserAction_t getPressedKey();
+// UserAction_t getPressedKey();
 void print_main_field(GameInfo_t *info);
 
 #endif  // S21_BRICKGAME_CLI_H
