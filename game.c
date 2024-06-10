@@ -1,7 +1,7 @@
 #include "common.h"
 #include "fms/tetris/fms.h"
 
-void setup();
+void setup(GameInfo_t *info);
 int init_info_field(GameInfo_t *info);
 void clear_info(GameInfo_t *info);
 
@@ -9,11 +9,10 @@ int main(void) {
   int error = 0;
   GameInfo_t *info = getInfo();
 
-  setup();
+  setup(info);
   error = init_info_field(info);
   if (!error) {
     updateCurrentState();
-    info->speed = START_SPEED;
 
     while (info->level != -1) {
       game_loop();
@@ -25,13 +24,14 @@ int main(void) {
   return 0;
 }
 
-void setup() {
+void setup(GameInfo_t *info) {
   initscr();
   clear();
   noecho();
   cbreak();
   keypad(stdscr, true);
   curs_set(false);
+  timeout(info->speed);
 }
 
 int init_info_field(GameInfo_t *info) {

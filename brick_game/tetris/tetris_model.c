@@ -108,6 +108,7 @@ void init_first_figure(UserAction_t action) {
     check_gen_figure = 1;
   }
   if (action == Start && !state->start) update_figure(generate_random_fig());
+  state->stateStatus = SHIFT;
 }
 
 State_temp_t *get_temp_state() {
@@ -128,7 +129,6 @@ State_t *init_state(State_t *state) {
   state->speed = START_SPEED;
   state->crash = 0;
   state->stateStatus = START;
-  state->action = Down;
   for (int i = 0; i < ROWS; i++) {
     for (int j = 0; j < COLUMNS; j++) {
       state->field[i][j] = 0;
@@ -303,19 +303,19 @@ void rotate_figure(State_t *state, State_temp_t *temp_state) {
   }
 }
 
-void shift(UserAction_t action) {
+void shift() {
   State_t *state = getState();
   State_temp_t *temp_state = get_temp_state();
-  static int check_shift = 0;
-  if (action == Left) {
+
+  if (state->action == Left) {
     if (state->pos.x > 0) state->pos.x -= 1;
     if (check_collision(state, temp_state)) state->pos.x += 1;
-    check_shift++;
-  } else if (action == Right) {
+
+  } else if (state->action == Right) {
     if (state->pos.x < COLUMNS - state->wide) state->pos.x += 1;
     if (check_collision(state, temp_state)) state->pos.x -= 1;
-    check_shift++;
-  } else if (action == Action) {
+
+  } else if (state->action == Action) {
     rotate_figure(state, temp_state);
     if (check_collision(state, temp_state) ||
         state->pos.x > COLUMNS - state->wide) {
@@ -323,14 +323,7 @@ void shift(UserAction_t action) {
       rotate_figure(state, temp_state);
       rotate_figure(state, temp_state);
     }
-    check_shift++;
   }
-  // if (check_shift > 3) {
-  //   state->pos.y += 1;
-  //   if (check_collision(state, temp_state)) state->crash = 1;
-  //   check_shift = 0;
-  // }
-  // if (state->crash) state->pos.y -= 1;
 }
 
 void check_full_line(State_t *state, State_temp_t *temp_state) {
@@ -363,10 +356,12 @@ void check_full_line(State_t *state, State_temp_t *temp_state) {
     state->score += 1500;
 }
 
-void check_game_over(State_t *state) {
+void check_game_over() {
+  State_t *state = getState();
   for (int j = 0; j < COLUMNS; j++) {
     if (state->field[0][j] == '*') {
-      state->level = -1;
+      // state->stateStatus = GAME_OVER;
+      state->game_over = 1;
       return;
     }
   }
@@ -414,47 +409,27 @@ void attachFigure() {
     state->pos.y = -1;
     state->crash = 0;
     update_info(state);
-    check_game_over(state);
+    check_game_over();
   } else {
     copy_field_from_temp(state, temp_state);
   }
   state->stateStatus = SHIFT;
 }
 
-void step_down(UserAction_t action) {
+void step_down() {
   State_t *state = getState();
   State_temp_t *temp_state = get_temp_state();
-  // if (state->crash) {
-  //   copy_field_to_temp(state, temp_state);
-  //   check_full_line(state, temp_state);
-  //   state->fig = state->next_fig;
-  //   state->wide = state->next_wide;
-  //   copy_figure(state, temp_state);
-  //   update_figure(generate_random_fig());
-  //   state->pos.x = (COLUMNS / 2 - 1);
-  //   state->pos.y = -1;
-  //   state->crash = 0;
-  //   update_info(state);
-  //   check_game_over(state);
-  // } else {
-  //   copy_field_from_temp(state, temp_state);
+
+  // state->pos.y += 1;
+  // if (check_shift > 3) {
+  //   state->pos.y += 1;
+  //   if (check_collision(state, temp_state)) state->crash = 1;
+  //   check_shift = 0;
   // }
+
   state->pos.y += 1;
+  if (check_collision(state, temp_state)) state->crash = 1;
+  if (state->crash) state->pos.y -= 1;
   draw_figure_in_field(state, temp_state);
+  state->stateStatus = ATTACH;
 }
-
-// void userInput(UserAction_t action, int hold) {
-//   State_t *state = getState();
-//   State_temp_t *temp_state = get_temp_state();
-//   (void)hold;
-
-//   init_first_figure(state, temp_state, action);
-
-//   if (action == Pause) {
-//     state->pause = !state->pause;
-//   } else if (action == Start && !state->start) {
-//     state->start = 1;
-//   } else if (!state->pause && state->start && action != Up) {
-//     moveFigure(state, temp_state, action);
-//   }
-// }

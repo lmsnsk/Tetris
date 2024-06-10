@@ -57,7 +57,7 @@ typedef struct {
 typedef enum { O, L, J, S, Z, T, I } Figure_t;
 
 State_t *init_state(State_t *state);
-void shift(UserAction_t action);
+void shift();
 int generate_random_fig();
 void update_figure(int random_fig);
 void init_first_figure(UserAction_t action);
@@ -65,13 +65,13 @@ void copy_figure(State_t *state, State_temp_t *temp_state);
 void check_full_line(State_t *state, State_temp_t *temp_state);
 State_t *getState();
 State_temp_t *get_temp_state();
-void step_down(UserAction_t action);
+void step_down();
 int check_collision(State_t *state, State_temp_t *temp_state);
 void draw_figure_in_field(State_t *state, State_temp_t *temp_state);
 void empty_fig(State_t *state);
 void empty_current_fig(State_temp_t *state_temp);
 void rotate_figure(State_t *state, State_temp_t *temp_state);
-void check_game_over(State_t *state);
+void check_game_over();
 void update_info(State_t *state);
 void saveHighScore(State_t *state);
 void readHighScore(State_t *state);

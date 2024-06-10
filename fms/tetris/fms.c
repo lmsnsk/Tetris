@@ -3,9 +3,10 @@
 void game_loop() {
   GameInfo_t *info = getInfo();
   State_t *state = getState();
+  getPressedKey();
 
   if (state->action == Terminate) {
-    getState()->level = -1;
+    state->level = -1;
     updateCurrentState();
     return;
   }
@@ -20,37 +21,30 @@ void game_loop() {
 
   if (state->stateStatus == SPAWN) {
     init_first_figure(state->action);
-    state->stateStatus = SHIFT;
   }
 
   if (state->stateStatus == SHIFT) {
-    getPressedKey();
     if (state->action == Pause) {
-      state->stateStatus = PAUSE;
-      getState()->pause = 1;
       state->action = Down;
+      state->stateStatus = PAUSE;
+      state->pause = 1;
     } else {
-      shift(state->action);
+      shift();
       state->stateStatus = STEP;
     }
   }
 
   if (state->stateStatus == PAUSE) {
-    getPressedKey();
     if (state->action == Pause) {
-      getState()->pause = 0;
-      state->action = Down;
+      state->pause = 0;
       state->stateStatus = SHIFT;
-      updateCurrentState();
-      draw(*info);
     }
   }
 
   if (state->stateStatus == STEP) {
-    step_down(state->action);
+    step_down();
     updateCurrentState();
     draw(*info);
-    getState()->stateStatus = ATTACH;
   }
 
   if (state->stateStatus == ATTACH) {
@@ -58,12 +52,9 @@ void game_loop() {
   }
 
   if (state->stateStatus == GAME_OVER) {
-    // state->action = getPressedKey();
-    // if (!getState()->game_over) draw(*info);
-    // updateCurrentState();
+    state->level = -1;
+    updateCurrentState();
   }
-
-  // draw(*info);
 };
 
 void start_game() {
@@ -72,19 +63,12 @@ void start_game() {
   init_state(state);
   updateCurrentState();
   draw(*info);
-  getPressedKey();
   if (state->action == Start) state->stateStatus = SPAWN;
 }
 
 GameInfo_t updateCurrentState() {
   GameInfo_t *info = getInfo();
   State_t *state = getState();
-  // static int check_init_state = 0;
-
-  // if (!check_init_state) {
-  //   init_state();
-  //   check_init_state = 1;
-  // }
   copy_field_to_info(info, state);
   info->high_score = state->high_score;
   info->pause = state->pause;
@@ -96,24 +80,34 @@ GameInfo_t updateCurrentState() {
 
 void getPressedKey() {
   State_t *state = getState();
+  state->action = Down;
   int ch = getch();
   if (ch != ERR) {
-    if (ch == 'q' || ch == 'Q') {
-      state->action = Terminate;
-    } else if (ch == 'p' || ch == 'P') {
-      state->action = Pause;
-    } else if (ch == 'e' || ch == 'E') {
-      state->action = Start;
-    } else if (ch == KEY_DOWN) {
-      state->action = Down;
-    } else if (ch == KEY_UP) {
-      state->action = Up;
-    } else if (ch == KEY_LEFT) {
-      state->action = Left;
-    } else if (ch == KEY_RIGHT) {
-      state->action = Right;
-    } else if (ch == ' ') {
-      state->action = Action;
+    switch (ch) {
+      case KEY_LEFT:
+        state->action = Left;
+        break;
+      case KEY_RIGHT:
+        state->action = Right;
+        break;
+      case KEY_DOWN:
+        state->action = Down;
+        break;
+      case ' ':
+        state->action = Action;
+        break;
+      case 'q':
+      case 'Q':
+        state->action = Terminate;
+        break;
+      case 'p':
+      case 'P':
+        state->action = Pause;
+        break;
+      case 'e':
+      case 'E':
+        state->action = Start;
+        break;
     }
   }
 };
